@@ -383,7 +383,7 @@ MIT License — free to use for educational and portfolio purposes.
 - GitHub:(https://github.com/Suru2005-shri)
 - LinkedIn: www.linkedin.com/in/shruti-srivastava-36b26232a
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/outputs/00_pro_dashboard.png" width="48%" alt="Correlation_heatmap" />
+  <img src="https://github.com/Suru2005-shri/House_prediction_system/blob/6da89f24bc19e52b3635659dbda596569a55f8e6/outputs/00_pro_dashboard.png" />
   
   <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/01_data_overview.png" width="48%" alt="feature_importance" />
 </p>
