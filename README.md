@@ -385,16 +385,6 @@ MIT License — free to use for educational and portfolio purposes.
 <p align="center">
   <img src="https://github.com/Suru2005-shri/House_prediction_system/blob/6da89f24bc19e52b3635659dbda596569a55f8e6/outputs/00_pro_dashboard.png" />
   
-  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/01_data_overview.png" width="48%" alt="feature_importance" />
-</p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/03_price_distribution.png" width="48%" alt="comparsiion"/>
-  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/05_categorical_analysis.png" width="48%" alt="Eduaction" />
-</p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/10_price_ttrend_by_area.png" width="70%" alt="score_distribution" />
 </p>
 
 
