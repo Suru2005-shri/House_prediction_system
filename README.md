@@ -380,9 +380,21 @@ MIT License — free to use for educational and portfolio purposes.
 ## 🤝 Connect
 
 **Built by:**Shruti Srivastava
-**LinkedIn:** [your-linkedin-url]  
-**GitHub:** [your-github-url]  
+- GitHub:(https://github.com/Suru2005-shri)
+- LinkedIn: www.linkedin.com/in/shruti-srivastava-36b26232a
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/00_pro_dashboard.png" width="48%" alt="Correlation_heatmap" />
+  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/01_data_overview.png" width="48%" alt="feature_importance" />
+</p>
 
----
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/03_price_distribution.png" width="48%" alt="comparsiion"/>
+  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/05_categorical_analysis.png" width="48%" alt="Eduaction" />
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Suru2005-shri/House-prediction-system/main/outputs/10_price_ttrend_by_area.png" width="70%" alt="score_distribution" />
+</p>
+
 
 *If this project helped you, please ⭐ star the repo!*
