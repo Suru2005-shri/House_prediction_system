@@ -1,237 +1,388 @@
-# 🎓 Student Performance Prediction System v2.0
+# 🏠 House Price Prediction using Regression Models
 
-> End-to-end ML pipeline that predicts student grades, identifies at-risk learners, and generates personalized academic recommendations — built for Data Science & ML portfolio showcase.
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)](https://python.org)
+[![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3-orange?logo=scikit-learn)](https://scikit-learn.org)
+[![XGBoost](https://img.shields.io/badge/XGBoost-1.7-red)](https://xgboost.readthedocs.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3-orange)
-![Streamlit](https://img.shields.io/badge/Streamlit-1.30-red)
-![License](https://img.shields.io/badge/License-MIT-green)
-
----
-
-## 📌 Overview
-
-This project builds a complete, production-style machine learning system that predicts student academic performance (A/B/C/D/F) and flags students at risk of failing — using entirely **synthetic, public-domain data** that mimics real-world school datasets.
-
-### Why this project matters
-
-| Use Case | How it helps |
-|---|---|
-| Early intervention | Flags at-risk students before exams |
-| Personalized learning | Recommends action items per student |
-| Dropout prevention | Tracks engagement & attendance trends |
-| Resource allocation | Helps schools target tutoring support |
+> An end-to-end machine learning project that predicts house prices using regression models — built as a student portfolio project demonstrating real-world Data Science skills.
 
 ---
 
-## 🏗️ Architecture
+## 📌 Table of Contents
+- [Project Overview](#-project-overview)
+- [Problem Statement](#-problem-statement)
+- [Industry Relevance](#-industry-relevance)
+- [Tech Stack](#-tech-stack)
+- [Project Architecture](#️-project-architecture)
+- [Dataset](#-dataset)
+- [Models Used](#-models-used)
+- [Results](#-results)
+- [Project Structure](#-project-structure)
+- [Installation](#️-installation)
+- [How to Run](#-how-to-run)
+- [Screenshots & Outputs](#-screenshots--outputs)
+- [Key Learnings](#-key-learnings)
+- [Interview Prep](#-interview-prep)
 
+---
+
+## 📖 Project Overview
+
+This project builds a complete **House Price Prediction system** using multiple regression algorithms. Given features of a property (area, bedrooms, location, age, amenities), the model predicts the market price in USD.
+
+**Simple Explanation:**  
+Just like how a doctor estimates your health based on symptoms, this project estimates a house's value based on its features — area, number of rooms, location quality, age, and amenities.
+
+**Technical Explanation:**  
+We apply supervised regression machine learning. The model learns the mathematical relationship between 16 input features and the target variable (price_usd) by minimizing prediction error across 1,598 training samples.
+
+**Workflow:**
 ```
-Student Data (1,000 records)
-    │
-    ▼
-Data Generation (simulate_students)
-    │  ← 17 raw features + 6 engineered
-    ▼
-Preprocessing Pipeline
-    │  ← cleaning · encoding · scaling · imputation
-    ▼
-Feature Engineering
-    │  ← engagement_score · study_x_attend · consistency · ...
-    ▼
-ML Model Training (4 models compared)
-    │  ← Random Forest · Gradient Boosting · SVM · Logistic Regression
-    ▼
-Best Model Selection (Random Forest ~91% accuracy)
-    │
-    ├── Grade Prediction (A/B/C/D/F)
-    ├── At-Risk Flag (binary)
-    └── Personalized Recommendations
+Raw Housing Data → Data Cleaning → Feature Engineering → Model Training → Price Prediction → Insights
 ```
 
 ---
 
-## 📊 Features
+## 🎯 Problem Statement
 
-### Input Features (17 raw + 6 engineered)
+Real estate markets involve millions of transactions. Accurately pricing a property is critical for:
+- **Buyers** — avoid overpaying
+- **Sellers** — avoid underpricing
+- **Banks/Lenders** — assess loan risk (LTV ratio)
+- **Investors** — identify undervalued properties
+- **Property Portals** — auto-generate price estimates
+
+Manual appraisal is slow, expensive, and inconsistent. A trained ML model can predict prices instantly and at scale.
+
+---
+
+## 🏢 Industry Relevance
+
+| Sector | How They Use It |
+|--------|----------------|
+| 🏦 **Banks** | Determine property value for home loan approvals |
+| 🏘️ **Real Estate Portals** | Show estimated prices (like Zillow Zestimate) |
+| 📊 **Investment Firms** | Find undervalued properties for ROI |
+| 🏗️ **Builders/Developers** | Price new developments competitively |
+| 🏛️ **Government** | Property tax assessment and urban planning |
+
+---
+
+## 🛠️ Tech Stack
+
+| Category | Technology |
+|----------|-----------|
+| Language | Python 3.8+ |
+| Data Manipulation | Pandas, NumPy |
+| Visualization | Matplotlib, Seaborn |
+| Machine Learning | Scikit-learn |
+| Boosting | XGBoost |
+| Model Persistence | Joblib |
+| Notebook | Jupyter |
+
+---
+
+## 🏗️ Project Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    INPUT LAYER                          │
+│  area_sqft | bedrooms | bathrooms | floors | age_years  │
+│  garage | garden | pool | location_score | distance     │
+│  school_nearby | furnishing                              │
+└────────────────────────┬────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                 PREPROCESSING                           │
+│  • Drop duplicates & outliers (IQR method)              │
+│  • Fill missing values with median                      │
+│  • Feature Engineering (4 new features)                 │
+│  • StandardScaler normalization                         │
+└────────────────────────┬────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│              REGRESSION MODELS                          │
+│  ┌──────────────────┐  ┌───────────────────────────┐   │
+│  │ Linear Regression│  │    Decision Tree          │   │
+│  └──────────────────┘  └───────────────────────────┘   │
+│  ┌──────────────────┐  ┌───────────────────────────┐   │
+│  │  Random Forest   │  │        XGBoost            │   │
+│  └──────────────────┘  └───────────────────────────┘   │
+└────────────────────────┬────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────────┐
+│                OUTPUT LAYER                             │
+│            💰 Predicted House Price (USD)               │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📊 Dataset
+
+| Property | Value |
+|----------|-------|
+| Type | Synthetic (programmatically generated) |
+| Samples | 2,000 rows |
+| Features | 12 raw + 4 engineered = 16 total |
+| Target | `price_usd` |
+| Price Range | ~$50,000 – $2,500,000 |
+
+### Features
 
 | Feature | Type | Description |
-|---|---|---|
-| `study_hours_per_day` | float | Daily study time |
-| `attendance_pct` | int | Class attendance percentage |
-| `previous_marks` | int | Marks in previous exam |
-| `assignments_completed_pct` | int | Homework completion rate |
-| `sleep_hours` | float | Nightly sleep duration |
-| `extracurricular_activities` | int | Number of activities (0–5) |
-| `tutoring` | binary | Whether student has a tutor |
-| `internet_access` | binary | Home internet availability |
-| `parental_education` | ordinal | Highest parental education level |
-| `social_media_hours` | float | Daily social media use |
-| `engagement_score` ⭐ | float | *Engineered*: weighted composite |
-| `study_x_attend` ⭐ | float | *Engineered*: interaction feature |
-| `consistency` ⭐ | float | *Engineered*: assignment vs marks gap |
-| `attendance_band` ⭐ | int | *Engineered*: ordinal attendance tier |
-| `healthy_sleep` ⭐ | binary | *Engineered*: 1 if 6–9 hours |
-| `learning_support` ⭐ | float | *Engineered*: internet + tutoring composite |
-
-### Target Variables
-
-| Target | Type | Values |
-|---|---|---|
-| `grade` | Multi-class | A / B / C / D / F |
-| `at_risk` | Binary | 0 = Safe, 1 = At Risk |
-| `final_score` | Regression | 0–100 |
+|---------|------|-------------|
+| `area_sqft` | Numeric | Property area in square feet |
+| `bedrooms` | Ordinal | Number of bedrooms (1–6) |
+| `bathrooms` | Ordinal | Number of bathrooms (1–4) |
+| `floors` | Ordinal | Number of floors (1–3) |
+| `age_years` | Numeric | Property age in years |
+| `garage` | Binary | 1 = has garage |
+| `garden` | Binary | 1 = has garden |
+| `swimming_pool` | Binary | 1 = has pool |
+| `location_score` | Numeric | Locality rating (1–10) |
+| `distance_city` | Numeric | Distance from city centre (km) |
+| `school_nearby` | Binary | 1 = good school nearby |
+| `furnishing` | Ordinal | 0=unfurnished, 1=semi, 2=fully |
+| `total_rooms` ✨ | Engineered | bedrooms + bathrooms |
+| `amenity_score` ✨ | Engineered | Composite luxury score |
+| `age_category` ✨ | Engineered | New(3)/Recent(2)/Old(1)/Very Old(0) |
+| `location_tier` ✨ | Engineered | Budget(0)/Mid(1)/Premium(2) |
 
 ---
 
-## 🤖 Model Performance
+## 🤖 Models Used
 
-| Model | Accuracy | F1 (weighted) | CV Score |
-|---|---|---|---|
-| **Random Forest** ✅ | **91.4%** | **0.902** | 90.8% ±1.2% |
-| Gradient Boosting | 89.7% | 0.881 | 89.1% ±1.5% |
-| SVM | 85.3% | 0.839 | 84.6% ±1.8% |
-| Logistic Regression | 82.1% | 0.807 | 81.5% ±2.1% |
+### 1. Linear Regression (Baseline)
+- Fits a straight-line relationship between features and price
+- Fast, interpretable, good baseline
+- **Best for:** Understanding which features drive price
+
+### 2. Decision Tree Regressor
+- Splits data based on feature thresholds
+- Highly interpretable
+- **Best for:** Understanding decision logic
+
+### 3. Random Forest Regressor
+- Ensemble of 200 decision trees
+- Robust to noise and overfitting
+- **Best for:** Accurate general predictions
+
+### 4. XGBoost Regressor
+- Gradient boosted trees
+- Industry standard for tabular data
+- **Best for:** Maximum accuracy
 
 ---
 
-## 📁 Folder Structure
+## 📈 Results
+
+| Model | MAE | RMSE | R² Score |
+|-------|-----|------|----------|
+| **Linear Regression** ⭐ | $36,916 | $48,551 | **0.8694** |
+| XGBoost | $39,833 | $51,818 | 0.8513 |
+| Random Forest | $41,387 | $53,819 | 0.8396 |
+| Decision Tree | $51,912 | $66,444 | 0.7555 |
+
+> ⭐ **Best model: Linear Regression** with R² = 0.8694  
+> Meaning: the model explains **86.94%** of the variance in house prices.
+
+### Sample Prediction
+```
+Property: 2200 sq ft | 4 BR | 3 BA | 2 Floors | 8yr | Garage ✓ | Garden ✓
+Location: Score 7.5/10 | 6km from city | School nearby
+
+💰 Predicted Price: $421,442
+```
+
+---
+
+## 📁 Project Structure
 
 ```
-Student-Performance-Prediction/
+House-Price-Prediction/
 │
 ├── data/
-│   └── student_performance.csv    ← generated dataset
+│   ├── housing_data.csv           # Raw synthetic dataset
+│   └── housing_engineered.csv    # After feature engineering
+│
+├── notebooks/
+│   └── house_price_prediction.ipynb  # Interactive Jupyter notebook
 │
 ├── src/
-│   ├── generate_data.py           ← synthetic data simulator
-│   ├── preprocess.py              ← cleaning + feature engineering
-│   ├── train_models.py            ← 4 ML models + comparison
-│   ├── predict.py                 ← inference + recommendations
-│   └── visualize.py               ← EDA + model charts
+│   ├── data_generator.py         # Generates synthetic housing data
+│   ├── preprocessor.py           # Cleaning, engineering, scaling
+│   ├── models.py                 # All 4 regression models
+│   ├── visualizer.py             # All charts & plots
+│   └── predictor.py              # Price prediction for new input
 │
 ├── models/
-│   ├── best_model.pkl             ← serialized Random Forest
-│   ├── scaler.pkl                 ← StandardScaler
-│   ├── imputer.pkl                ← SimpleImputer
-│   └── label_encoder.pkl          ← Grade LabelEncoder
+│   └── best_model.pkl            # Saved best trained model
 │
 ├── outputs/
-│   └── model_results.json         ← accuracy, F1, confusion matrices
+│   ├── 01_data_overview.png
+│   ├── 02_correlation_heatmap.png
+│   ├── 03_price_distribution.png
+│   ├── 04_feature_vs_price.png
+│   ├── 05_categorical_analysis.png
+│   ├── 06_model_comparison.png
+│   ├── 07_actual_vs_predicted.png
+│   ├── 08_residual_analysis.png
+│   └── 10_price_trend_by_area.png
 │
-├── images/
-│   ├── score_distribution.png
-│   ├── correlation_heatmap.png
-│   ├── study_attendance_vs_score.png
-│   ├── feature_importance.png
-│   └── model_comparison.png
-│
-├── app.py                         ← Streamlit web app
-├── main.py                        ← full pipeline runner
+├── main.py                       # ← Run this to execute everything
 ├── requirements.txt
 └── README.md
 ```
 
 ---
 
-## ⚡ Quick Start
+## ⚙️ Installation
 
-### 1. Clone & install
+### Prerequisites
+- Python 3.8 or higher
+- pip package manager
+
+### Setup (Windows / Mac / Linux)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Student-Performance-Prediction.git
-cd Student-Performance-Prediction
+# 1. Clone the repository
+git clone https://github.com/YOUR_USERNAME/House-Price-Prediction.git
+cd House-Price-Prediction
+
+# 2. Create a virtual environment (recommended)
+python -m venv venv
+
+# Activate it:
+# Windows:
+venv\Scripts\activate
+# Mac/Linux:
+source venv/bin/activate
+
+# 3. Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Run full pipeline
+---
 
+## ▶️ How to Run
+
+### Option A — Run Full Pipeline (Recommended)
 ```bash
 python main.py
 ```
 
-This will:
-- Generate 1,000 synthetic student records
-- Preprocess and engineer features
-- Train 4 ML models and compare them
-- Save the best model
-- Generate 5 visualizations
-- Run a sample prediction
+**Expected Terminal Output:**
+```
+🏠  HOUSE PRICE PREDICTION  |  ML Pipeline
 
-### 3. Launch interactive web app
+PHASE 1 │ Generating Dataset         ✅
+PHASE 2 │ Data Cleaning              ✅
+PHASE 3 │ Feature Engineering        ✅
+PHASE 4 │ EDA Visualizations         ✅
+PHASE 5 │ Train-Test Split           ✅
+PHASE 6 │ Model Training             ✅
+PHASE 7 │ Save Best Model            ✅
+PHASE 8 │ Evaluation Plots           ✅
+PHASE 9 │ Price Prediction           ✅
 
+💰 Predicted Price: $421,442
+```
+
+### Option B — Interactive Jupyter Notebook
 ```bash
-streamlit run app.py
+jupyter notebook notebooks/house_price_prediction.ipynb
 ```
 
-Open `http://localhost:8501` in your browser.
-
-### 4. Predict for a custom student
-
+### Customise the Prediction
+Edit `SAMPLE_HOUSE` in `main.py`:
 ```python
-from src.predict import predict
-
-result = predict({
-    "gender": "female",
-    "parental_education": "bachelors",
-    "internet_access": "yes",
-    "tutoring": "no",
-    "study_hours_per_day": 6.0,
-    "attendance_pct": 82,
-    "previous_marks": 72,
-    "assignments_completed_pct": 80,
-    "sleep_hours": 7.5,
-    "extracurricular_activities": 2,
-    "tutoring_hours_per_week": 0,
-    "social_media_hours": 2.5,
-})
-
-print(result["grade"])           # → "B"
-print(result["at_risk"])         # → False
-print(result["recommendations"]) # → [...]
+SAMPLE_HOUSE = {
+    "area_sqft"     : 1500,
+    "bedrooms"      : 3,
+    "bathrooms"     : 2,
+    "floors"        : 1,
+    "age_years"     : 10,
+    "garage"        : 1,
+    "garden"        : 0,
+    "swimming_pool" : 0,
+    "location_score": 6.5,
+    "distance_city" : 8.0,
+    "school_nearby" : 1,
+    "furnishing"    : 0,
+}
 ```
 
 ---
 
-## 🎓 Interview Talking Points
+## 🖼️ Screenshots & Outputs
 
-**Q: Why synthetic data?**
-> Real student data is privacy-sensitive (FERPA/GDPR). Synthetic data lets us build the same pipeline, validate the architecture, and demonstrate ML skills without privacy issues — a standard approach at EdTech companies.
+All charts are automatically saved to the `outputs/` folder.
 
-**Q: Why Random Forest over deep learning?**
-> Tabular data with ~20 features rarely benefits from neural networks. Tree ensembles are interpretable, require no normalization tuning, handle mixed types, and provide feature importance natively — exactly what a school administrator needs to trust predictions.
-
-**Q: How would you deploy this?**
-> Package the `predict()` function behind a FastAPI endpoint, containerize with Docker, and deploy to AWS Lambda or a cloud VM. The Streamlit app demonstrates the UI layer already.
-
-**Q: How did you handle class imbalance?**
-> Used `class_weight="balanced"` in all classifiers and evaluated on weighted F1 score to prevent grade-A bias in the majority class.
-
----
-
-## 📈 Project Roadmap
-
-- [x] Synthetic data generation with realistic correlations
-- [x] Feature engineering pipeline
-- [x] 4-model comparison with cross-validation
-- [x] Recommendation engine
-- [x] Streamlit dashboard
-- [ ] FastAPI REST endpoint
-- [ ] Docker containerization
-- [ ] SHAP explainability plots
-- [ ] Time-series performance tracking
+| File | Description |
+|------|-------------|
+| `01_data_overview.png` | Histogram of all features |
+| `02_correlation_heatmap.png` | Correlation matrix between all features |
+| `03_price_distribution.png` | House price distribution (raw + log scale) |
+| `04_feature_vs_price.png` | Scatter plots: each feature vs price |
+| `05_categorical_analysis.png` | Box plots: price by category |
+| `06_model_comparison.png` | MAE, RMSE, R² comparison bar charts |
+| `07_actual_vs_predicted.png` | Actual vs predicted scatter for all models |
+| `08_residual_analysis.png` | Residual distribution for best model |
+| `10_price_trend_by_area.png` | Price vs area split by bedrooms |
 
 ---
 
-## 🧑‍💻 Author
+## 🎓 Key Learnings
 
-Built by **[Your Name]** as a portfolio project for Data Science / ML Engineer roles.
+1. **Data Generation** — Simulating realistic datasets when real data is unavailable
+2. **EDA** — Finding patterns, correlations, and outliers before modelling
+3. **Feature Engineering** — Creating new features that boost model performance
+4. **Regression Models** — Understanding Linear Regression, Decision Trees, Random Forest, XGBoost
+5. **Model Evaluation** — Using MAE, RMSE, R² to measure and compare models
+6. **ML Pipeline** — Building modular, reusable, production-style code
+7. **GitHub Portfolio** — Structuring a project for professional presentation
 
-- GitHub: [@your_username](https://github.com/your_username)
-- LinkedIn: [your-linkedin](https://linkedin.com/in/your-linkedin)
+---
+
+## 💼 Interview Prep
+
+**Q: Why did you choose regression over classification?**  
+A: House price is a continuous variable (not a category), so regression is the correct problem type.
+
+**Q: What does R² = 0.87 mean?**  
+A: The model explains 87% of the variance in house prices. The remaining 13% is due to factors not captured in our data.
+
+**Q: Why does Linear Regression outperform XGBoost here?**  
+A: The synthetic data was generated using a linear formula, so linear models fit it perfectly. Real-world data is more complex, where XGBoost typically wins.
+
+**Q: What is feature engineering?**  
+A: Creating new meaningful features from existing ones. E.g., `total_rooms = bedrooms + bathrooms` gives the model a more useful signal.
+
+**Q: What is StandardScaler and why is it needed?**  
+A: It normalizes features to mean=0, std=1. Without it, features with large values (area_sqft in thousands) would dominate features with small values (garage = 0 or 1).
+
+**Q: What are the business applications of this model?**  
+A: Banks use it for loan appraisals, portals like Zillow/MagicBricks use it for auto-valuations, investors use it to find underpriced properties.
 
 ---
 
 ## 📄 License
 
-MIT License — free to use, modify, and share.
+MIT License — free to use for educational and portfolio purposes.
+
+---
+
+## 🤝 Connect
+
+**Built by:** [Your Name]  
+**LinkedIn:** [your-linkedin-url]  
+**GitHub:** [your-github-url]  
+
+---
+
+*If this project helped you, please ⭐ star the repo!*
