@@ -1,4 +1,4 @@
-# 🏠 House Price Prediction using Regression Models
+#  House Price Prediction using Regression Models
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue?logo=python)](https://python.org)
 [![Scikit-learn](https://img.shields.io/badge/Scikit--learn-1.3-orange?logo=scikit-learn)](https://scikit-learn.org)
@@ -9,7 +9,7 @@
 
 ---
 
-## 📌 Table of Contents
+##  Table of Contents
 - [Project Overview](#-project-overview)
 - [Problem Statement](#-problem-statement)
 - [Industry Relevance](#-industry-relevance)
@@ -27,7 +27,7 @@
 
 ---
 
-## 📖 Project Overview
+##  Project Overview
 
 This project builds a complete **House Price Prediction system** using multiple regression algorithms. Given features of a property (area, bedrooms, location, age, amenities), the model predicts the market price in USD.
 
@@ -44,7 +44,7 @@ Raw Housing Data → Data Cleaning → Feature Engineering → Model Training �
 
 ---
 
-## 🎯 Problem Statement
+##  Problem Statement
 
 Real estate markets involve millions of transactions. Accurately pricing a property is critical for:
 - **Buyers** — avoid overpaying
@@ -57,19 +57,19 @@ Manual appraisal is slow, expensive, and inconsistent. A trained ML model can pr
 
 ---
 
-## 🏢 Industry Relevance
+##  Industry Relevance
 
 | Sector | How They Use It |
 |--------|----------------|
-| 🏦 **Banks** | Determine property value for home loan approvals |
-| 🏘️ **Real Estate Portals** | Show estimated prices (like Zillow Zestimate) |
-| 📊 **Investment Firms** | Find undervalued properties for ROI |
-| 🏗️ **Builders/Developers** | Price new developments competitively |
-| 🏛️ **Government** | Property tax assessment and urban planning |
+|  **Banks** | Determine property value for home loan approvals |
+|  **Real Estate Portals** | Show estimated prices (like Zillow Zestimate) |
+|  **Investment Firms** | Find undervalued properties for ROI |
+|  **Builders/Developers** | Price new developments competitively |
+|  **Government** | Property tax assessment and urban planning |
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Category | Technology |
 |----------|-----------|
@@ -83,7 +83,7 @@ Manual appraisal is slow, expensive, and inconsistent. A trained ML model can pr
 
 ---
 
-## 🏗️ Project Architecture
+##  Project Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -116,13 +116,13 @@ Manual appraisal is slow, expensive, and inconsistent. A trained ML model can pr
                          ▼
 ┌─────────────────────────────────────────────────────────┐
 │                OUTPUT LAYER                             │
-│            💰 Predicted House Price (USD)               │
+│             Predicted House Price (USD)               │
 └─────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 📊 Dataset
+##  Dataset
 
 | Property | Value |
 |----------|-------|
@@ -148,14 +148,14 @@ Manual appraisal is slow, expensive, and inconsistent. A trained ML model can pr
 | `distance_city` | Numeric | Distance from city centre (km) |
 | `school_nearby` | Binary | 1 = good school nearby |
 | `furnishing` | Ordinal | 0=unfurnished, 1=semi, 2=fully |
-| `total_rooms` ✨ | Engineered | bedrooms + bathrooms |
-| `amenity_score` ✨ | Engineered | Composite luxury score |
-| `age_category` ✨ | Engineered | New(3)/Recent(2)/Old(1)/Very Old(0) |
-| `location_tier` ✨ | Engineered | Budget(0)/Mid(1)/Premium(2) |
+| `total_rooms`  | Engineered | bedrooms + bathrooms |
+| `amenity_score`  | Engineered | Composite luxury score |
+| `age_category`  | Engineered | New(3)/Recent(2)/Old(1)/Very Old(0) |
+| `location_tier`  | Engineered | Budget(0)/Mid(1)/Premium(2) |
 
 ---
 
-## 🤖 Models Used
+##  Models Used
 
 ### 1. Linear Regression (Baseline)
 - Fits a straight-line relationship between features and price
@@ -188,7 +188,7 @@ Manual appraisal is slow, expensive, and inconsistent. A trained ML model can pr
 | Random Forest | $41,387 | $53,819 | 0.8396 |
 | Decision Tree | $51,912 | $66,444 | 0.7555 |
 
-> ⭐ **Best model: Linear Regression** with R² = 0.8694  
+>  **Best model: Linear Regression** with R² = 0.8694  
 > Meaning: the model explains **86.94%** of the variance in house prices.
 
 ### Sample Prediction
@@ -196,12 +196,12 @@ Manual appraisal is slow, expensive, and inconsistent. A trained ML model can pr
 Property: 2200 sq ft | 4 BR | 3 BA | 2 Floors | 8yr | Garage ✓ | Garden ✓
 Location: Score 7.5/10 | 6km from city | School nearby
 
-💰 Predicted Price: $421,442
+ Predicted Price: $421,442
 ```
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 House-Price-Prediction/
@@ -241,7 +241,7 @@ House-Price-Prediction/
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ### Prerequisites
 - Python 3.8 or higher
@@ -269,7 +269,7 @@ pip install -r requirements.txt
 
 ---
 
-## ▶️ How to Run
+##  How to Run
 
 ### Option A — Run Full Pipeline (Recommended)
 ```bash
@@ -280,17 +280,17 @@ python main.py
 ```
 🏠  HOUSE PRICE PREDICTION  |  ML Pipeline
 
-PHASE 1 │ Generating Dataset         ✅
-PHASE 2 │ Data Cleaning              ✅
-PHASE 3 │ Feature Engineering        ✅
-PHASE 4 │ EDA Visualizations         ✅
-PHASE 5 │ Train-Test Split           ✅
-PHASE 6 │ Model Training             ✅
-PHASE 7 │ Save Best Model            ✅
-PHASE 8 │ Evaluation Plots           ✅
-PHASE 9 │ Price Prediction           ✅
+PHASE 1 │ Generating Dataset         
+PHASE 2 │ Data Cleaning              
+PHASE 3 │ Feature Engineering        
+PHASE 4 │ EDA Visualizations         
+PHASE 5 │ Train-Test Split           
+PHASE 6 │ Model Training             
+PHASE 7 │ Save Best Model            
+PHASE 8 │ Evaluation Plots           
+PHASE 9 │ Price Prediction           
 
-💰 Predicted Price: $421,442
+ Predicted Price: $421,442
 ```
 
 ### Option B — Interactive Jupyter Notebook
@@ -319,7 +319,7 @@ SAMPLE_HOUSE = {
 
 ---
 
-## 🖼️ Screenshots & Outputs
+## Screenshots & Outputs
 
 All charts are automatically saved to the `outputs/` folder.
 
@@ -337,7 +337,7 @@ All charts are automatically saved to the `outputs/` folder.
 
 ---
 
-## 🎓 Key Learnings
+##  Key Learnings
 
 1. **Data Generation** — Simulating realistic datasets when real data is unavailable
 2. **EDA** — Finding patterns, correlations, and outliers before modelling
@@ -349,7 +349,7 @@ All charts are automatically saved to the `outputs/` folder.
 
 ---
 
-## 💼 Interview Prep
+##  Interview Prep
 
 **Q: Why did you choose regression over classification?**  
 A: House price is a continuous variable (not a category), so regression is the correct problem type.
@@ -371,7 +371,7 @@ A: Banks use it for loan appraisals, portals like Zillow/MagicBricks use it for 
 
 ---
 
-## 📄 License
+##  License
 
 MIT License — free to use for educational and portfolio purposes.
 
@@ -379,7 +379,7 @@ MIT License — free to use for educational and portfolio purposes.
 
 ## 🤝 Connect
 
-**Built by:** [Your Name]  
+**Built by:**Shruti Srivastava
 **LinkedIn:** [your-linkedin-url]  
 **GitHub:** [your-github-url]  
 
