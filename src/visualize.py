@@ -1,256 +1,297 @@
 """
-visualize.py
-------------
-Generates publication-quality charts for EDA, model evaluation, and insights.
-All plots are saved to /outputs/ and /images/.
+visualizer.py
+-------------
+All EDA charts, evaluation plots, and feature importance graphs.
+Every figure is saved to the outputs/ folder for GitHub upload.
 """
 
-import json
+import os
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")          # non-interactive backend (safe for scripts)
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+import matplotlib.gridspec as gridspec
 import seaborn as sns
-from pathlib import Path
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
 
-OUTPUTS = Path(__file__).parent.parent / "outputs"
-IMAGES  = Path(__file__).parent.parent / "images"
-DATA    = Path(__file__).parent.parent / "data"
-OUTPUTS.mkdir(exist_ok=True)
-IMAGES.mkdir(exist_ok=True)
+# ── Global style ──────────────────────────────────────────────────────────────
+sns.set_theme(style="darkgrid", palette="muted")
+SAVE_DIR = "outputs"
+os.makedirs(SAVE_DIR, exist_ok=True)
 
-# ── Style ─────────────────────────────────────────────────────────────────────
-PALETTE = {
-    "A": "#3B6D11", "B": "#185FA5", "C": "#854F0B", "D": "#A32D2D", "F": "#501313"
-}
-GRADE_ORDER = ["A", "B", "C", "D", "F"]
-plt.rcParams.update({
-    "figure.facecolor": "white",
-    "axes.facecolor": "#FAFAFA",
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-    "font.family": "DejaVu Sans",
-    "axes.titlesize": 14,
-    "axes.labelsize": 12,
-})
+def _save(fname: str):
+    path = os.path.join(SAVE_DIR, fname)
+    plt.savefig(path, dpi=150, bbox_inches="tight")
+    plt.close()
+    print(f"  📊 Saved → {path}")
 
 
-def load_data():
-    df = pd.read_csv(DATA / "student_performance.csv")
-    return df
+# ── 1. Dataset overview ───────────────────────────────────────────────────────
+def plot_data_overview(df: pd.DataFrame):
+    """Distribution of every numeric column."""
+    print("\n[Visualizer] Plotting data overview...")
+    numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
+    n = len(numeric_cols)
+    cols = 4
+    rows = (n + cols - 1) // cols
+
+    fig, axes = plt.subplots(rows, cols, figsize=(18, rows * 3.5))
+    axes = axes.flatten()
+
+    for i, col in enumerate(numeric_cols):
+        axes[i].hist(df[col], bins=30, color="#4C72B0", edgecolor="white", alpha=0.85)
+        axes[i].set_title(col, fontsize=11, fontweight="bold")
+        axes[i].set_xlabel("")
+
+    for j in range(i + 1, len(axes)):
+        axes[j].set_visible(False)
+
+    fig.suptitle("Feature Distributions – Housing Dataset", fontsize=14, fontweight="bold", y=1.01)
+    plt.tight_layout()
+    _save("01_data_overview.png")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 1. Score distribution
-# ─────────────────────────────────────────────────────────────────────────────
-def plot_score_distribution(df):
+# ── 2. Correlation heatmap ────────────────────────────────────────────────────
+def plot_correlation_heatmap(df: pd.DataFrame):
+    """Pearson correlation matrix as an annotated heatmap."""
+    print("[Visualizer] Plotting correlation heatmap...")
+    fig, ax = plt.subplots(figsize=(14, 11))
+    corr = df.select_dtypes(include=np.number).corr()
+    mask = np.triu(np.ones_like(corr, dtype=bool))
+
+    sns.heatmap(
+        corr, mask=mask, annot=True, fmt=".2f",
+        cmap="coolwarm", linewidths=0.5, ax=ax,
+        annot_kws={"size": 8}
+    )
+    ax.set_title("Feature Correlation Matrix", fontsize=14, fontweight="bold", pad=15)
+    plt.tight_layout()
+    _save("02_correlation_heatmap.png")
+
+
+# ── 3. Price distribution ─────────────────────────────────────────────────────
+def plot_price_distribution(df: pd.DataFrame):
+    """Histogram + KDE of house prices."""
+    print("[Visualizer] Plotting price distribution...")
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # histogram
-    ax = axes[0]
-    ax.hist(df["final_score"], bins=20, color="#378ADD", edgecolor="white", linewidth=0.5, alpha=0.85)
-    ax.axvline(df["final_score"].mean(), color="#E24B4A", linestyle="--", linewidth=1.5,
-               label=f"Mean = {df['final_score'].mean():.1f}")
-    ax.axvline(df["final_score"].median(), color="#639922", linestyle=":", linewidth=1.5,
-               label=f"Median = {df['final_score'].median():.1f}")
-    ax.set_title("Final Score Distribution")
-    ax.set_xlabel("Score")
-    ax.set_ylabel("Count")
-    ax.legend(fontsize=10)
+    # Raw distribution
+    sns.histplot(df["price_usd"], bins=40, kde=True, color="#2196F3", ax=axes[0])
+    axes[0].set_title("House Price Distribution", fontweight="bold")
+    axes[0].set_xlabel("Price (USD)")
+    axes[0].xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e6:.1f}M" if x >= 1e6 else f"${x/1e3:.0f}K"))
 
-    # grade donut
-    ax2 = axes[1]
-    counts = df["grade"].value_counts().reindex(GRADE_ORDER).fillna(0)
-    nonzero = counts[counts > 0]
-    colors = [PALETTE[g] for g in nonzero.index]
-    wedges, texts, autotexts = ax2.pie(
-        nonzero, labels=nonzero.index, colors=colors,
-        autopct="%1.1f%%", startangle=90,
-        wedgeprops={"edgecolor": "white", "linewidth": 1.5}
-    )
-    for at in autotexts: at.set_fontsize(9)
-    ax2.set_title("Grade Distribution")
+    # Log-scale
+    sns.histplot(np.log1p(df["price_usd"]), bins=40, kde=True, color="#FF5722", ax=axes[1])
+    axes[1].set_title("Log-Transformed Price Distribution", fontweight="bold")
+    axes[1].set_xlabel("log(Price + 1)")
 
+    plt.suptitle("Target Variable Analysis", fontsize=13, fontweight="bold")
     plt.tight_layout()
-    fig.savefig(IMAGES / "score_distribution.png", dpi=150, bbox_inches="tight")
-    plt.close()
-    print("Saved: images/score_distribution.png")
+    _save("03_price_distribution.png")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 2. Correlation heatmap
-# ─────────────────────────────────────────────────────────────────────────────
-def plot_correlation_heatmap(df):
-    num_cols = [
-        "study_hours_per_day", "attendance_pct", "previous_marks",
-        "assignments_completed_pct", "sleep_hours", "extracurricular_activities",
-        "social_media_hours", "final_score"
-    ]
-    corr = df[num_cols].corr()
+# ── 4. Feature vs price scatter plots ────────────────────────────────────────
+def plot_feature_vs_price(df: pd.DataFrame):
+    """Key numeric features plotted against price."""
+    print("[Visualizer] Plotting features vs price...")
+    key_features = ["area_sqft", "location_score", "bedrooms", "age_years",
+                    "distance_city", "bathrooms"]
+
+    fig, axes = plt.subplots(2, 3, figsize=(16, 10))
+    axes = axes.flatten()
+
+    colors = ["#4C72B0", "#DD8452", "#55A868", "#C44E52", "#8172B2", "#937860"]
+    for i, feat in enumerate(key_features):
+        axes[i].scatter(df[feat], df["price_usd"], alpha=0.3, s=12, color=colors[i])
+        # Trend line
+        m, b = np.polyfit(df[feat], df["price_usd"], 1)
+        x_line = np.linspace(df[feat].min(), df[feat].max(), 100)
+        axes[i].plot(x_line, m * x_line + b, color="red", linewidth=1.5, label="Trend")
+        axes[i].set_xlabel(feat, fontsize=10)
+        axes[i].set_ylabel("Price (USD)", fontsize=9)
+        axes[i].set_title(f"{feat} vs Price", fontweight="bold")
+        axes[i].yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+        axes[i].legend(fontsize=8)
+
+    plt.suptitle("Feature vs House Price (Scatter Plots)", fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    _save("04_feature_vs_price.png")
+
+
+# ── 5. Box plots – categorical features ──────────────────────────────────────
+def plot_categorical_analysis(df: pd.DataFrame):
+    """Box plots for categorical/ordinal features vs price."""
+    print("[Visualizer] Plotting categorical analysis...")
+    cat_cols = ["bedrooms", "furnishing", "floors", "garage",
+                "garden", "swimming_pool", "school_nearby"]
+
+    fig, axes = plt.subplots(2, 4, figsize=(20, 10))
+    axes = axes.flatten()
+
+    palette = sns.color_palette("Set2", 8)
+    for i, col in enumerate(cat_cols):
+        sns.boxplot(x=df[col], y=df["price_usd"], ax=axes[i],
+                    palette=palette, width=0.5)
+        axes[i].set_title(f"Price by {col}", fontweight="bold")
+        axes[i].set_xlabel(col)
+        axes[i].set_ylabel("Price (USD)")
+        axes[i].yaxis.set_major_formatter(
+            plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+
+    axes[-1].set_visible(False)
+    plt.suptitle("Price Distribution by Categorical Features", fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    _save("05_categorical_analysis.png")
+
+
+# ── 6. Model comparison bar chart ─────────────────────────────────────────────
+def plot_model_comparison(metrics_list: list):
+    """Side-by-side bar charts for MAE, RMSE, R² across models."""
+    print("[Visualizer] Plotting model comparison...")
+    df_m = pd.DataFrame(metrics_list)
+    models = df_m["Model"].tolist()
+    x = np.arange(len(models))
+    width = 0.25
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+    colors = ["#4C72B0", "#DD8452", "#55A868", "#C44E52"]
+
+    # MAE
+    bars1 = axes[0].bar(x, df_m["MAE"], width=0.5, color=colors, edgecolor="white")
+    axes[0].set_title("Mean Absolute Error (lower = better)", fontweight="bold")
+    axes[0].set_xticks(x); axes[0].set_xticklabels(models, rotation=15, ha="right")
+    axes[0].set_ylabel("MAE (USD)")
+    axes[0].yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+    for bar in bars1:
+        axes[0].text(bar.get_x() + bar.get_width()/2, bar.get_height() * 1.01,
+                     f"${bar.get_height()/1e3:.1f}K", ha="center", va="bottom", fontsize=9)
+
+    # RMSE
+    bars2 = axes[1].bar(x, df_m["RMSE"], width=0.5, color=colors, edgecolor="white")
+    axes[1].set_title("Root Mean Squared Error (lower = better)", fontweight="bold")
+    axes[1].set_xticks(x); axes[1].set_xticklabels(models, rotation=15, ha="right")
+    axes[1].set_ylabel("RMSE (USD)")
+    axes[1].yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+    for bar in bars2:
+        axes[1].text(bar.get_x() + bar.get_width()/2, bar.get_height() * 1.01,
+                     f"${bar.get_height()/1e3:.1f}K", ha="center", va="bottom", fontsize=9)
+
+    # R²
+    bars3 = axes[2].bar(x, df_m["R2"], width=0.5, color=colors, edgecolor="white")
+    axes[2].set_title("R² Score (higher = better)", fontweight="bold")
+    axes[2].set_xticks(x); axes[2].set_xticklabels(models, rotation=15, ha="right")
+    axes[2].set_ylabel("R² Score")
+    axes[2].set_ylim(0, 1.05)
+    for bar in bars3:
+        axes[2].text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.005,
+                     f"{bar.get_height():.3f}", ha="center", va="bottom", fontsize=9)
+
+    plt.suptitle("Model Performance Comparison", fontsize=14, fontweight="bold")
+    plt.tight_layout()
+    _save("06_model_comparison.png")
+
+
+# ── 7. Actual vs Predicted ────────────────────────────────────────────────────
+def plot_actual_vs_predicted(y_test, predictions_dict: dict):
+    """Scatter: actual price vs predicted price for each model."""
+    print("[Visualizer] Plotting actual vs predicted...")
+    n = len(predictions_dict)
+    fig, axes = plt.subplots(1, n, figsize=(6 * n, 6))
+    if n == 1:
+        axes = [axes]
+
+    colors = ["#4C72B0", "#DD8452", "#55A868", "#C44E52"]
+    for ax, (name, y_pred), color in zip(axes, predictions_dict.items(), colors):
+        ax.scatter(y_test, y_pred, alpha=0.35, s=15, color=color, label="Predictions")
+        # Perfect prediction line
+        lims = [min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max())]
+        ax.plot(lims, lims, "r--", linewidth=1.5, label="Perfect fit")
+        ax.set_xlabel("Actual Price (USD)", fontsize=10)
+        ax.set_ylabel("Predicted Price (USD)", fontsize=10)
+        ax.set_title(name, fontweight="bold")
+        ax.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+        ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+        ax.legend(fontsize=9)
+
+    plt.suptitle("Actual vs Predicted House Prices", fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    _save("07_actual_vs_predicted.png")
+
+
+# ── 8. Residual plot ──────────────────────────────────────────────────────────
+def plot_residuals(y_test, best_pred, best_name: str):
+    """Residual analysis for the best model."""
+    print("[Visualizer] Plotting residuals...")
+    residuals = y_test - best_pred
+
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+    # Residuals vs predicted
+    axes[0].scatter(best_pred, residuals, alpha=0.35, s=12, color="#4C72B0")
+    axes[0].axhline(0, color="red", linewidth=1.5, linestyle="--")
+    axes[0].set_xlabel("Predicted Price (USD)")
+    axes[0].set_ylabel("Residual (Actual − Predicted)")
+    axes[0].set_title(f"{best_name} – Residuals vs Predicted", fontweight="bold")
+    axes[0].xaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+
+    # Residual distribution
+    axes[1].hist(residuals, bins=40, color="#55A868", edgecolor="white", alpha=0.85)
+    axes[1].set_xlabel("Residual (USD)")
+    axes[1].set_title("Residual Distribution", fontweight="bold")
+
+    plt.suptitle("Residual Analysis", fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    _save("08_residual_analysis.png")
+
+
+# ── 9. Feature importance ─────────────────────────────────────────────────────
+def plot_feature_importance(model, feature_names: list, model_name: str):
+    """Horizontal bar chart of feature importances (tree models only)."""
+    if not hasattr(model, "feature_importances_"):
+        print(f"  [Visualizer] {model_name} has no feature_importances_ – skipping.")
+        return
+
+    print("[Visualizer] Plotting feature importance...")
+    importances = model.feature_importances_
+    idx = np.argsort(importances)
 
     fig, ax = plt.subplots(figsize=(10, 8))
-    mask = np.triu(np.ones_like(corr, dtype=bool))
-    sns.heatmap(
-        corr, mask=mask, annot=True, fmt=".2f", cmap="RdYlGn",
-        center=0, vmin=-1, vmax=1, ax=ax,
-        linewidths=0.5, linecolor="white",
-        cbar_kws={"shrink": 0.8}
-    )
-    ax.set_title("Feature Correlation Matrix", fontsize=15, pad=12)
-    plt.tight_layout()
-    fig.savefig(IMAGES / "correlation_heatmap.png", dpi=150, bbox_inches="tight")
-    plt.close()
-    print("Saved: images/correlation_heatmap.png")
+    colors = plt.cm.viridis(np.linspace(0.2, 0.9, len(idx)))
+    ax.barh(np.array(feature_names)[idx], importances[idx],
+            color=colors, edgecolor="white")
+    ax.set_xlabel("Importance Score", fontsize=11)
+    ax.set_title(f"Feature Importance – {model_name}", fontsize=13, fontweight="bold")
+    ax.tick_params(axis="y", labelsize=10)
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 3. Study hours vs score (scatter + regression line)
-# ─────────────────────────────────────────────────────────────────────────────
-def plot_study_vs_score(df):
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-
-    # scatter
-    ax = axes[0]
-    colors = [PALETTE[g] for g in df["grade"]]
-    ax.scatter(df["study_hours_per_day"], df["final_score"],
-               c=colors, alpha=0.5, s=15, edgecolors="none")
-    # regression
-    m, b = np.polyfit(df["study_hours_per_day"], df["final_score"], 1)
-    xs = np.linspace(0, 12, 100)
-    ax.plot(xs, m*xs + b, color="black", linewidth=1.5, linestyle="--", label=f"y = {m:.1f}x + {b:.1f}")
-    ax.set_title("Study Hours vs Final Score")
-    ax.set_xlabel("Study hours per day")
-    ax.set_ylabel("Final score")
-    patches = [mpatches.Patch(color=PALETTE[g], label=g) for g in GRADE_ORDER]
-    ax.legend(handles=patches, fontsize=9, title="Grade")
-
-    # attendance vs score
-    ax2 = axes[1]
-    ax2.scatter(df["attendance_pct"], df["final_score"],
-                c=colors, alpha=0.5, s=15, edgecolors="none")
-    m2, b2 = np.polyfit(df["attendance_pct"], df["final_score"], 1)
-    xs2 = np.linspace(30, 100, 100)
-    ax2.plot(xs2, m2*xs2 + b2, color="black", linewidth=1.5, linestyle="--")
-    ax2.set_title("Attendance % vs Final Score")
-    ax2.set_xlabel("Attendance (%)")
-    ax2.set_ylabel("Final score")
-    ax2.legend(handles=patches, fontsize=9, title="Grade")
+    # Value labels
+    for i, v in enumerate(importances[idx]):
+        ax.text(v + 0.002, i, f"{v:.3f}", va="center", fontsize=9)
 
     plt.tight_layout()
-    fig.savefig(IMAGES / "study_attendance_vs_score.png", dpi=150, bbox_inches="tight")
-    plt.close()
-    print("Saved: images/study_attendance_vs_score.png")
+    _save("09_feature_importance.png")
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# 4. Feature importance bar chart
-# ─────────────────────────────────────────────────────────────────────────────
-def plot_feature_importance():
-    results_path = OUTPUTS / "model_results.json"
-    if not results_path.exists():
-        print("Run train_models.py first to generate model_results.json")
-        return
+# ── 10. Price trend by area ───────────────────────────────────────────────────
+def plot_price_trend_by_area(df: pd.DataFrame):
+    """Line/scatter showing how price scales with area, split by bedroom count."""
+    print("[Visualizer] Plotting price trend by area...")
+    fig, ax = plt.subplots(figsize=(12, 7))
 
-    with open(results_path) as f:
-        data = json.load(f)
+    palette = sns.color_palette("tab10", 6)
+    for bd, grp in df.groupby("bedrooms"):
+        grp_sorted = grp.sort_values("area_sqft")
+        ax.scatter(grp_sorted["area_sqft"], grp_sorted["price_usd"],
+                   label=f"{bd} BR", alpha=0.3, s=12, color=palette[int(bd)-1])
+        # Smooth trend line (rolling mean)
+        if len(grp_sorted) > 20:
+            rm = grp_sorted.set_index("area_sqft")["price_usd"].rolling(50, min_periods=5).mean()
+            ax.plot(rm.index, rm.values, linewidth=2, color=palette[int(bd)-1])
 
-    fi = data.get("feature_importance", {})
-    if not fi:
-        print("No feature importance available (SVM/Logistic Reg. don't expose it)")
-        return
-
-    fi_df = pd.DataFrame(list(fi.items()), columns=["Feature", "Importance"])
-    fi_df = fi_df.sort_values("Importance", ascending=True).tail(15)
-
-    fig, ax = plt.subplots(figsize=(9, 6))
-    bars = ax.barh(fi_df["Feature"], fi_df["Importance"],
-                   color="#378ADD", edgecolor="white", height=0.6)
-    ax.set_xlabel("Feature Importance (MDI)")
-    ax.set_title(f"Top Feature Importances — {data['best_model']}")
-    for bar in bars:
-        w = bar.get_width()
-        ax.text(w + 0.002, bar.get_y() + bar.get_height()/2,
-                f"{w:.3f}", va="center", fontsize=8)
+    ax.set_xlabel("Area (sq ft)", fontsize=11)
+    ax.set_ylabel("Price (USD)", fontsize=11)
+    ax.set_title("House Price Trend by Area & Bedrooms", fontsize=13, fontweight="bold")
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f"${x/1e3:.0f}K"))
+    ax.legend(title="Bedrooms", fontsize=9)
     plt.tight_layout()
-    fig.savefig(IMAGES / "feature_importance.png", dpi=150, bbox_inches="tight")
-    plt.close()
-    print("Saved: images/feature_importance.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 5. Model comparison bar chart
-# ─────────────────────────────────────────────────────────────────────────────
-def plot_model_comparison():
-    results_path = OUTPUTS / "model_results.json"
-    if not results_path.exists():
-        print("Run train_models.py first.")
-        return
-
-    with open(results_path) as f:
-        data = json.load(f)
-
-    models = list(data["all_models"].keys())
-    accs = [data["all_models"][m]["accuracy"] for m in models]
-    f1s = [data["all_models"][m]["f1"] for m in models]
-
-    x = np.arange(len(models))
-    w = 0.35
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    b1 = ax.bar(x - w/2, accs, w, label="Accuracy", color="#378ADD", edgecolor="white")
-    b2 = ax.bar(x + w/2, f1s, w, label="Weighted F1", color="#639922", edgecolor="white")
-
-    for bar in list(b1) + list(b2):
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.005,
-                f"{bar.get_height():.3f}", ha="center", fontsize=9)
-
-    ax.set_xticks(x)
-    ax.set_xticklabels(models, rotation=15, ha="right")
-    ax.set_ylim(0.7, 1.0)
-    ax.set_title("ML Model Comparison — Accuracy & F1 Score")
-    ax.legend()
-    plt.tight_layout()
-    fig.savefig(IMAGES / "model_comparison.png", dpi=150, bbox_inches="tight")
-    plt.close()
-    print("Saved: images/model_comparison.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 6. Score by parental education
-# ─────────────────────────────────────────────────────────────────────────────
-def plot_parental_education_effect(df):
-    edu_order = ["no_education", "high_school", "some_college", "bachelors", "masters"]
-    means = df.groupby("parental_education")["final_score"].mean().reindex(edu_order)
-
-    fig, ax = plt.subplots(figsize=(9, 5))
-    bars = ax.bar(means.index, means.values, color="#7F77DD", edgecolor="white", width=0.55)
-    for bar, val in zip(bars, means.values):
-        ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5,
-                f"{val:.1f}", ha="center", fontsize=10)
-    ax.set_xticklabels(edu_order, rotation=20, ha="right")
-    ax.set_ylabel("Average Final Score")
-    ax.set_title("Impact of Parental Education on Student Score")
-    plt.tight_layout()
-    fig.savefig(IMAGES / "parental_education_effect.png", dpi=150, bbox_inches="tight")
-    plt.close()
-    print("Saved: images/parental_education_effect.png")
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Main
-# ─────────────────────────────────────────────────────────────────────────────
-def main():
-    print("Generating visualizations...")
-    df = load_data()
-    plot_score_distribution(df)
-    plot_correlation_heatmap(df)
-    plot_study_vs_score(df)
-    plot_parental_education_effect(df)
-    plot_feature_importance()
-    plot_model_comparison()
-    print("\nAll charts saved to /images/")
-
-
-if __name__ == "__main__":
-    main()
+    _save("10_price_trend_by_area.png")
